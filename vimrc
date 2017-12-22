@@ -31,21 +31,18 @@ NeoBundle 'scrooloose/nerdtree'
 NeoBundle 'tpope/vim-commentary'
 NeoBundle 'tpope/vim-fugitive'
 NeoBundle 'kien/ctrlp.vim'
-NeoBundle 'bling/vim-airline'
+NeoBundle 'vim-airline/vim-airline'
+NeoBundle 'vim-airline/vim-airline-themes'
 NeoBundle 'airblade/vim-gitgutter'
 NeoBundle 'sheerun/vim-polyglot'
 NeoBundle 'vim-scripts/grep.vim'
 NeoBundle 'vim-scripts/CSApprox'
 NeoBundle 'davidhalter/jedi-vim'
 NeoBundle 'editorconfig/editorconfig-vim'
-
+NeoBundle 'martinda/Jenkinsfile-vim-syntax'
 
 "" Snippets
-NeoBundle 'SirVer/ultisnips'
 NeoBundle 'honza/vim-snippets'
-
-"" Color
-NeoBundle 'tomasr/molokai'
 
 "" Custom bundles
 
@@ -55,11 +52,13 @@ NeoBundle 'hail2u/vim-css3-syntax'
 NeoBundle 'gorodinskiy/vim-coloresque'
 NeoBundle 'tpope/vim-haml'
 
+"" Python
+NeoBundle 'w0rp/ale'
+NeoBundle 'fisadev/vim-isort'
+""NeoBundle 'python-mode/python-mode'
 
-"" Javascript Bundle
-NeoBundle "scrooloose/syntastic"
-
-
+"" Go
+NeoBundle 'fatih/vim-go'
 
 call neobundle#end()
 
@@ -123,7 +122,6 @@ set number
 
 let no_buffers_menu=1
 highlight BadWhitespace ctermbg=red guibg=red
-colorscheme molokai
 
 set mousemodel=popup
 set t_Co=256
@@ -170,9 +168,10 @@ set title
 set titleold="Terminal"
 set titlestring=%F
 
-set statusline=%F%m%r%h%w%=(%{&ff}/%Y)\ (line\ %l\/%L,\ col\ %c)\ %{fugitive#statusline()}
-
+" vim-airline
 let g:airline_theme = 'powerlineish'
+let g:airline_powerline_fonts = 1
+let g:airline#extensions#syntastic#enabled = 1
 let g:airline#extensions#branch#enabled = 1
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#left_sep = ' '
@@ -242,6 +241,8 @@ if has("gui_running")
   autocmd BufWritePre * :call TrimWhiteSpace()
 endif
 
+autocmd BufWritePre *.py %s/\s\+$//e
+
 set autoread
 
 "*****************************************************************************
@@ -279,29 +280,19 @@ set wildmode=list:longest,list:full
 set wildignore+=*.o,*.obj,.git,*.rbc,.pyc,__pycache__
 let g:ctrlp_custom_ignore = '\v[\/]\.(git|hg|svn|tox)$'
 let g:ctrlp_user_command = "find %s -type f | grep -Ev '"+ g:ctrlp_custom_ignore +"'"
-let g:ctrlp_use_caching = 0
+let g:ctrlp_use_caching = 1
 cnoremap <C-P> <C-R>=expand("%:p:h") . "/" <CR>
 noremap <leader>b :CtrlPBuffer<CR>
 let g:ctrlp_map = ',e'
 let g:ctrlp_open_new_file = 'r'
 
-" snippets
-let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<tab>"
-let g:UltiSnipsJumpBackwardTrigger="<c-b>"
-let g:UltiSnipsEditSplit="vertical"
-
-" syntastic
-let g:syntastic_always_populate_loc_list=1
-let g:syntastic_error_symbol='✗'
-let g:syntastic_warning_symbol='⚠'
-let g:syntastic_style_error_symbol = '✗'
-let g:syntastic_style_warning_symbol = '⚠'
-let g:syntastic_auto_loc_list=1
-let g:syntastic_aggregate_errors = 1
-
-" vim-airline
-let g:airline#extensions#syntastic#enabled = 1
+" ale
+let g:ale_sign_error='✗'
+let g:ale_sign_warning='⚠'
+let g:ale_statusline_format = ['✗ %d', '⚠ %d', '⬥ ok']
+let g:ale_echo_msg_error_str = '✗'
+let g:ale_echo_msg_warning_str = '⚠'
+let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
 
 "" Remove trailing whitespace on <leader>S
 nnoremap <leader>:call TrimWhiteSpace()<cr>:let @/=''<CR>
@@ -323,6 +314,8 @@ noremap ,w :bn<CR>
 
 "" Close buffer
 noremap ,c :bd<CR>
+"" Close buffer, split proof
+noremap <C-d> :bp\|bd #<CR>
 
 "" Clean search (highlight)
 nnoremap <silent> <leader><space> :noh<cr>
@@ -335,10 +328,14 @@ vmap > >gv
 noremap ,o :!echo `git url`/blob/`git rev-parse --abbrev-ref HEAD`/%\#L<C-R>=line('.')<CR> \| xargs open<CR><CR>
 "" Custom configs
 
-
-
 let g:javascript_enable_domhtmlcss = 1
 
+"" YAPF
+map <C-Y> :call yapf#YAPF()<cr>
+imap <C-Y> <c-o>:call yapf#YAPF()<cr>
+
+"" isort
+let g:vim_isort_map = '<C-i>'
 
 "" Include user's local vim config
 if filereadable(expand("~/.vimrc.local"))
