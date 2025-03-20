@@ -28,3 +28,10 @@
     co = checkout
     st = status -sb
     nuke = !git checkout -f && git clean -f -d
+    cleanup-merged = "!f() { \
+        branch=$(git symbolic-ref --short HEAD); \
+        git checkout main && \
+        git pull && \
+        git branch -d $branch && \
+        git fetch -p; \
+    }; f"
